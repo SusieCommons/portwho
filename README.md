@@ -120,11 +120,14 @@ fixtures are real `netstat` / `tasklist` / `lsof` output captured on a zh-CN
 Windows 10 box, a Debian container, and a Mac. The kill-escalation tests stub
 out `subprocess.run`, so they never touch a real process.
 
-End-to-end check (spawns a real listener, finds it, kills it, verifies it died):
+The one thing tests cannot cover is whether the OS table is read correctly on
+a real machine, so check that by hand: start something that listens, then
 
 ```bash
-python _pw_e2e.py
+python portwho.py <that port>
 ```
+
+You should get one row with the right pid in it.
 
 ## Limits
 
