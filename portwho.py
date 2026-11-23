@@ -431,7 +431,8 @@ def _hex_ip(h, v6):
 # filtering / output
 # --------------------------------------------------------------------------
 
-def select(records, port=None, proto=None, listening_only=True, states=None):
+def select(records, port=None, proto=None, listening_only=True, states=None,
+           match=None):
     hits = []
     seen = set()
     for r in records:
@@ -599,13 +600,17 @@ def build_parser():
                    help="with --kill: SIGKILL / taskkill /F")
     p.add_argument("-y", "--yes", action="store_true",
                    help="with --kill: do not prompt")
+    p.add_argument("-P", "--process", metavar="NAME",
+                   help="reverse lookup: every port held by a process "
+                        "(substring, case-insensitive)")
     p.add_argument("-V", "--version", action="version", version="portwho 1.0.0")
     return p
 
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
-    if args.port is None and not args.list:
+    want_process = getattr(args, "process", None)
+    if args.port is None and not args.list and not want_process:
         build_parser().print_help()
         return 2
     if args.port is not None and not (0 < args.port < 65536):
@@ -633,6 +638,14 @@ def main(argv=None):
             name = _proc_name(r.pid)
         exe = _win_exe_path(r.pid) if (IS_WIN and r.pid) else ""
         rows.append(r.as_dict(name, exe))
+
+    # Reverse lookup runs after the pid->name map is built, because the process
+    # name is what the user is matching on.
+    if want_process:
+        needle = want_process.lower()
+        rows = [d for d in rows
+                if needle in (d["process"] or "").lower()
+                or needle in (d["exe"] or "").lower()]
 
     if args.kill:
         if not rows:
