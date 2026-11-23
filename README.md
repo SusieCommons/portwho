@@ -39,16 +39,24 @@ drop it next to a `portwho.cmd` containing `@python "%~dp0portwho.py" %*`.
 portwho PORT                 who owns PORT
 portwho --list               every listening socket
 portwho --list --all         include established connections and UDP
+portwho -P NAME              the other direction: every port NAME holds
 portwho PORT --json          machine readable
 portwho PORT --kill          terminate the owner (asks first)
 portwho PORT --kill -y -f    terminate without asking, force
 ```
+
+`-P` matches on the process name as a case-insensitive substring, and falls
+back to the full exe path when the name is not resolved. So `portwho -P qq`
+finds both `QQ.exe` and `QQLiveService.exe`, and `portwho -P redis` still works
+when the process runs from `C:\tools\redis-server.exe` under a different
+display name.
 
 | flag | meaning |
 | --- | --- |
 | `-l, --list` | list all listening sockets |
 | `-a, --all` | include established / UDP; `TIME_WAIT` noise is dropped |
 | `-p, --proto {tcp,udp}` | restrict to one protocol |
+| `-P, --process NAME` | reverse lookup by process name |
 | `-j, --json` | JSON output |
 | `-k, --kill` | terminate the owning process, with confirmation |
 | `-f, --force` | with `--kill`: `SIGKILL` / `taskkill /F` |
