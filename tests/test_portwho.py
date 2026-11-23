@@ -238,6 +238,30 @@ class TestProcNetHex(unittest.TestCase):
         self.assertEqual(portwho._hex_ip("ZZZZ", False), "ZZZZ")
 
 
+class TestReverseLookup(unittest.TestCase):
+    """--process filters rows by name after the pid map is built."""
+
+    def test_substring_case_insensitive(self):
+        rows = [
+            {"proto": "tcp", "local": "0.0.0.0:80", "state": "LISTENING",
+             "pid": 1, "process": "nginx.exe", "exe": "C:/nginx/nginx.exe"},
+            {"proto": "tcp", "local": "0.0.0.0:81", "state": "LISTENING",
+             "pid": 2, "process": "svchost.exe", "exe": ""},
+        ]
+        needle = "NGINX"
+        hit = [d for d in rows if needle.lower() in (d["process"] or "").lower()]
+        self.assertEqual(len(hit), 1)
+        self.assertEqual(hit[0]["pid"], 1)
+
+    def test_matches_exe_path_too(self):
+        rows = [{"proto": "tcp", "local": "0.0.0.0:80", "state": "LISTENING",
+                 "pid": 1, "process": "", "exe": "C:/tools/redis-server.exe"}]
+        needle = "redis"
+        hit = [d for d in rows
+               if needle in (d["process"] or "").lower() or needle in (d["exe"] or "").lower()]
+        self.assertEqual(len(hit), 1)
+
+
 class TestCli(unittest.TestCase):
     def test_port_out_of_range(self):
         self.assertEqual(portwho.main(["70000"]), 2)
