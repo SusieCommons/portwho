@@ -123,7 +123,7 @@ to `/F` automatically - the other path just fails on Windows.
 python -m pytest tests/ -q
 ```
 
-43 tests, fixture based - no live sockets, no admin rights needed. The
+45 tests, fixture based - no live sockets, no admin rights needed. The
 fixtures are real `netstat` / `tasklist` / `lsof` output captured on a zh-CN
 Windows 10 box, a Debian container, and a Mac. The kill-escalation tests stub
 out `subprocess.run`, so they never touch a real process.
